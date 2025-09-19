@@ -26,6 +26,7 @@ if (in_array($method, ['POST', 'PUT', 'DELETE']) && !in_array($role, ['manager']
 
 if ($method === 'GET') {
     $child_id = $_GET['child_id'] ?? null;
+    $trainer_id = $_GET['trainer_id'] ?? null;
 
     $sql = "SELECT 
                 t.id, 
@@ -41,16 +42,25 @@ if ($method === 'GET') {
             JOIN users u ON t.trainer_user_id = u.id
             JOIN user_profiles up ON u.id = up.user_id";
 
+    $params = [];
+    $types = '';
+
     if ($child_id) {
         $sql .= " JOIN training_attendance ta ON t.id = ta.training_id WHERE ta.child_id = ? AND ta.status = 'present'";
+        $params[] = $child_id;
+        $types .= 'i';
+    } else if ($trainer_id) {
+        $sql .= " WHERE t.trainer_user_id = ?";
+        $params[] = $trainer_id;
+        $types .= 'i';
     }
 
     $sql .= " ORDER BY t.start_time DESC";
 
     $stmt = $conn->prepare($sql);
 
-    if ($child_id) {
-        $stmt->bind_param("i", $child_id);
+    if (!empty($params)) {
+        $stmt->bind_param($types, ...$params);
     }
 
     $stmt->execute();
