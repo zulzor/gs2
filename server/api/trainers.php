@@ -1,6 +1,14 @@
 <?php
 
 $method = $_SERVER['REQUEST_METHOD'];
+$role = $_SESSION['role'] ?? null;
+
+// Authorization Check: Only managers can create, update, or delete trainers.
+if (in_array($method, ['POST', 'PUT', 'DELETE']) && $role !== 'manager') {
+    http_response_code(403);
+    echo json_encode(['success' => false, 'message' => 'Forbidden: Only managers can perform this action.']);
+    exit();
+}
 
 if ($method === 'GET') {
     $sql = "SELECT 

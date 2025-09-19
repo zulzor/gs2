@@ -10,6 +10,14 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 $method = $_SERVER['REQUEST_METHOD'];
+$role = $_SESSION['role'] ?? null;
+
+// Authorization Check: Only managers can create, update, or delete disciplines.
+if (in_array($method, ['POST', 'PUT', 'DELETE']) && $role !== 'manager') {
+    http_response_code(403);
+    echo json_encode(['success' => false, 'message' => 'Forbidden: Only managers can perform this action.']);
+    exit();
+}
 
 switch ($method) {
     case 'GET':
@@ -36,15 +44,25 @@ switch ($method) {
     case 'POST':
         // Add a new discipline
         $data = json_decode(file_get_contents('php://input'), true);
-        $name = $conn->real_escape_string($data['name']);
+        $name = $data['name'] ?? null;
+        $measurement_type = $data['measurement_type'] ?? null;
 
-        $sql = "INSERT INTO disciplines (name) VALUES ('$name')";
-        if ($conn->query($sql) === TRUE) {
+        if (!$name || !$measurement_type) {
+            http_response_code(400);
+            echo json_encode(['message' => 'Name and measurement type are required.']);
+            exit();
+        }
+
+        $stmt = $conn->prepare("INSERT INTO disciplines (name, measurement_type) VALUES (?, ?)");
+        $stmt->bind_param("ss", $name, $measurement_type);
+
+        if ($stmt->execute()) {
             echo json_encode(['message' => 'Discipline added successfully', 'id' => $conn->insert_id]);
         } else {
             http_response_code(500);
             echo json_encode(['message' => 'Failed to add discipline']);
         }
+        $stmt->close();
         break;
     case 'PUT':
         // Update an existing discipline
@@ -71,13 +89,20 @@ switch ($method) {
         break;
     case 'DELETE':
         // Delete a discipline
-        $sql = "DELETE FROM disciplines WHERE id = $id";
-        if ($conn->query($sql) === TRUE) {
+        if (!$id) {
+            http_response_code(400);
+            echo json_encode(['message' => 'Discipline ID is required.']);
+            exit();
+        }
+        $stmt = $conn->prepare("DELETE FROM disciplines WHERE id = ?");
+        $stmt->bind_param("i", $id);
+        if ($stmt->execute()) {
             echo json_encode(['message' => 'Discipline deleted successfully']);
         } else {
             http_response_code(500);
             echo json_encode(['message' => 'Failed to delete discipline']);
         }
+        $stmt->close();
         break;
     default:
         http_response_code(405);
