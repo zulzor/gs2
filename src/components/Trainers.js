@@ -1,35 +1,75 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, Button, TextInput } from 'react-native';
-import { useCrud } from '../hooks/useCrud';
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  Button,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
+} from 'react-native';
+import { useCrud } from '../hooks/useCrud.js';
 
-// A simple Select component for web
-const Select = ({ options, value, onValueChange, placeholder }) => (
-  <select 
-    value={value || ''} 
-    onChange={(e) => onValueChange(e.target.value)} 
-    style={{ height: 40, borderColor: '#ccc', borderWidth: 1, marginBottom: 12, paddingHorizontal: 8, borderRadius: 4, backgroundColor: '#fff' }}
-  >
-    {placeholder && <option value="" disabled>{placeholder}</option>}
-    {options.map(option => (
-      <option key={option.value} value={option.value}>{option.label}</option>
-    ))}
-  </select>
-);
+// New component for multi-select checkboxes
+const MultiSelectCheckboxes = ({ options, selectedIds, onSelectionChange, title }) => {
+  const handleSelect = (id) => {
+    const newSelection = selectedIds.includes(id)
+      ? selectedIds.filter((selectedId) => selectedId !== id)
+      : [...selectedIds, id];
+    onSelectionChange(newSelection);
+  };
+
+  return (
+    <View style={styles.checkboxContainer}>
+        <Text style={styles.checkboxTitle}>{title}</Text>
+        <View style={styles.checkboxOptionsContainer}>
+            {options.map((option) => (
+            <TouchableOpacity
+                key={option.id}
+                style={styles.checkboxOption}
+                onPress={() => handleSelect(option.id)}
+            >
+                <View style={[styles.checkbox, selectedIds.includes(option.id) && styles.checkboxSelected]} />
+                <Text>{option.name}</Text>
+            </TouchableOpacity>
+            ))}
+        </View>
+    </View>
+  );
+};
 
 const Trainers = () => {
   const { items: trainers, loading, createItem, updateItem, deleteItem } = useCrud('trainers');
-  const { items: branches } = useCrud('branches'); // Load branches for the dropdown
+  const { items: branches } = useCrud('branches');
 
   const [isEditing, setIsEditing] = useState(false);
-  const [currentItem, setCurrentItem] = useState({ id: null, first_name: '', last_name: '', email: '', phone_number: '', branch_id: null });
+  const [currentItem, setCurrentItem] = useState({
+    id: null,
+    first_name: '',
+    last_name: '',
+    email: '',
+    phone_number: '',
+    branch_ids: [],
+  });
 
   const handleAddNew = () => {
-    setCurrentItem({ id: null, first_name: '', last_name: '', email: '', phone_number: '', branch_id: null });
+    setCurrentItem({
+      id: null,
+      first_name: '',
+      last_name: '',
+      email: '',
+      phone_number: '',
+      branch_ids: [],
+    });
     setIsEditing(true);
   };
 
   const handleEdit = (item) => {
-    setCurrentItem(item);
+    setCurrentItem({
+        ...item,
+        branch_ids: item.branch_ids || [],
+    });
     setIsEditing(true);
   };
 
@@ -40,25 +80,33 @@ const Trainers = () => {
   };
 
   const handleSave = async () => {
-    const { id, first_name, last_name, email, password, phone_number, branch_id } = currentItem;
+    const { id, first_name, last_name, email, password, phone_number, branch_ids } = currentItem;
     if (!first_name || !last_name || !email) {
-      window.alert("Validation Error: First name, last name, and email are required.");
+      window.alert('First name, last name, and email are required.');
       return;
     }
 
+    const dataToSave = {
+        first_name,
+        last_name,
+        email,
+        phone_number,
+        branch_ids: branch_ids.map(id => parseInt(id)),
+    };
+
     try {
       if (id) {
-        await updateItem(id, { first_name, last_name, email, phone_number, branch_id });
+        await updateItem(id, dataToSave);
       } else {
         if (!password) {
-          window.alert("Validation Error: Password is required for a new trainer.");
+          window.alert('Password is required for a new trainer.');
           return;
         }
-        await createItem({ first_name, last_name, email, password, phone_number, branch_id });
+        await createItem({ ...dataToSave, password });
       }
       setIsEditing(false);
     } catch (error) {
-      console.error("Save operation failed:", error);
+      console.error('Save operation failed:', error);
     }
   };
 
@@ -68,7 +116,7 @@ const Trainers = () => {
         <Text style={styles.itemName}>{item.first_name} {item.last_name}</Text>
         <Text style={styles.itemDetails}>Email: {item.email}</Text>
         <Text style={styles.itemDetails}>Phone: {item.phone_number}</Text>
-        <Text style={styles.itemDetails}>Branch: {item.branch_name || 'Not assigned'}</Text>
+        <Text style={styles.itemDetails}>Branches: {item.branch_names ? item.branch_names.join(', ') : 'N/A'}</Text>
       </View>
       <View style={styles.buttonsContainer}>
         <Button title="Edit" onPress={() => handleEdit(item)} />
@@ -83,18 +131,18 @@ const Trainers = () => {
 
   if (isEditing) {
     return (
-      <View style={styles.formContainer}>
+      <ScrollView style={styles.formContainer}>
         <Text style={styles.title}>{currentItem.id ? 'Edit Trainer' : 'Add New Trainer'}</Text>
         <TextInput style={styles.input} placeholder="First Name" value={currentItem.first_name} onChangeText={(text) => setCurrentItem({ ...currentItem, first_name: text })} />
         <TextInput style={styles.input} placeholder="Last Name" value={currentItem.last_name} onChangeText={(text) => setCurrentItem({ ...currentItem, last_name: text })} />
         <TextInput style={styles.input} placeholder="Email" value={currentItem.email} onChangeText={(text) => setCurrentItem({ ...currentItem, email: text })} keyboardType="email-address" autoCapitalize="none" />
         <TextInput style={styles.input} placeholder="Phone Number" value={currentItem.phone_number} onChangeText={(text) => setCurrentItem({ ...currentItem, phone_number: text })} keyboardType="phone-pad" />
-        
-        <Select
-          placeholder="Assign Branch..."
-          value={currentItem.branch_id}
-          onValueChange={(value) => setCurrentItem({ ...currentItem, branch_id: value })}
-          options={branches.map(b => ({ label: b.name, value: b.id }))}
+
+        <MultiSelectCheckboxes 
+            title="Branches"
+            options={branches}
+            selectedIds={currentItem.branch_ids}
+            onSelectionChange={(ids) => setCurrentItem({ ...currentItem, branch_ids: ids })}
         />
 
         {!currentItem.id && (
@@ -104,7 +152,7 @@ const Trainers = () => {
           <Button title="Save" onPress={handleSave} />
           <Button title="Cancel" onPress={() => setIsEditing(false)} color="gray" />
         </View>
-      </View>
+      </ScrollView>
     );
   }
 
@@ -127,7 +175,13 @@ const styles = StyleSheet.create({
   buttonsContainer: { flexDirection: 'row', gap: 8 },
   formContainer: { padding: 16, backgroundColor: '#f8f8f8', borderRadius: 8 },
   input: { height: 40, borderColor: '#ccc', borderWidth: 1, marginBottom: 12, paddingHorizontal: 8, borderRadius: 4, backgroundColor: '#fff' },
-  formButtons: { flexDirection: 'row', justifyContent: 'space-around', marginTop: 16 },
+  formButtons: { flexDirection: 'row', justifyContent: 'space-around', marginTop: 16, marginBottom: 32 },
+  checkboxContainer: { marginBottom: 12 },
+  checkboxTitle: { fontSize: 16, fontWeight: 'bold', marginBottom: 8 },
+  checkboxOptionsContainer: { flexDirection: 'row', flexWrap: 'wrap' },
+  checkboxOption: { flexDirection: 'row', alignItems: 'center', marginRight: 16, marginBottom: 8 },
+  checkbox: { height: 20, width: 20, borderRadius: 3, borderWidth: 2, borderColor: '#ccc', backgroundColor: '#fff' },
+  checkboxSelected: { backgroundColor: '#063672', borderColor: '#063672' },
 });
 
 export default Trainers;

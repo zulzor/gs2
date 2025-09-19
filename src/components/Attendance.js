@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, FlatList } from 'react-native';
 
 const Attendance = () => {
   const [attendanceRecords, setAttendanceRecords] = useState([]);
@@ -53,7 +53,9 @@ const Attendance = () => {
           keyExtractor={(item) => item.id.toString()}
           renderItem={({ item }) => (
             <View style={styles.recordItem}>
-              <Text>Тренировка: {item.discipline_name} ({item.branch_name})</Text>
+              <Text>
+                Тренировка: {item.discipline_name} ({item.branch_name})
+              </Text>
               <Text>Дата: {item.date}</Text>
               <Text>Ученик: {item.child_name}</Text>
               <Text>Статус: {item.status}</Text>

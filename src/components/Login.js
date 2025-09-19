@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext.js';
 import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
@@ -17,7 +17,10 @@ const Login = () => {
       navigate('/'); // Navigate to dashboard on successful login
     } catch (err) {
       setError(err.message || 'Failed to login');
-      Alert.alert("Login Failed", err.message || 'Please check your credentials.');
+      Alert.alert(
+        'Login Failed',
+        err.message || 'Please check your credentials.'
+      );
     }
   };
 
@@ -73,7 +76,7 @@ const styles = StyleSheet.create({
   errorText: {
     color: 'red',
     marginBottom: 12,
-  }
+  },
 });
 
 export default Login;
