@@ -1,7 +1,4 @@
 <?php
-require_once __DIR__ . '/../db.php';
-
-header("Content-Type: application/json; charset=utf-8");
 
 $method = $_SERVER['REQUEST_METHOD'];
 
@@ -24,7 +21,7 @@ if ($method === 'POST') {
         echo json_encode(['success' => false, 'message' => 'Email, password, first name, and last name are required.']);
         exit();
     }
-    $password_hash = 'hashed_password';
+    $password_hash = password_hash($data['password'], PASSWORD_DEFAULT);
     $role = 'parent';
 
     $conn->begin_transaction();
@@ -55,7 +52,6 @@ if ($method === 'POST') {
 }
 
 if ($method === 'PUT') {
-    $id = $_GET['id'] ?? null;
     $data = json_decode(file_get_contents('php://input'), true);
     if (!$id || empty($data['first_name']) || empty($data['last_name']) || empty($data['email'])) {
         http_response_code(400);
@@ -85,7 +81,6 @@ if ($method === 'PUT') {
 }
 
 if ($method === 'DELETE') {
-    $id = $_GET['id'] ?? null;
     if (!$id) {
         http_response_code(400);
         echo json_encode(['success' => false, 'message' => 'Parent ID is required.']);
@@ -107,5 +102,4 @@ if ($method === 'DELETE') {
     $stmt->close();
 }
 
-$conn->close();
 ?>

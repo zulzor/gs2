@@ -1,7 +1,12 @@
 <?php
+session_start();
+
+require_once __DIR__ . '/db.php'; // db.php is in the parent directory of /api
+global $conn; // Make $conn explicitly global after db.php is included
+
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST, GET, PUT, DELETE, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type");
+header("Access-Control-Allow-Headers: Content-Type, Authorization");
 header("Content-Type: application/json; charset=utf-8");
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -21,7 +26,7 @@ $request = str_replace('.php', '', $request);
 
 $requestParts = explode('/', $request);
 $resource = $requestParts[0];
-$id = $_GET['id'] ?? null; // Get id from query parameters
+$id = $requestParts[1] ?? $_GET['id'] ?? null; // Get id from path or query parameters
 
 $apiDir = __DIR__ . '/api/';
 
@@ -56,9 +61,17 @@ switch ($resource) {
     case 'attendance':
         require_once $apiDir . 'attendance.php';
         break;
+    case 'subscriptions':
+        require_once $apiDir . 'subscriptions.php';
+        break;
+    case 'disciplines':
+        require_once $apiDir . 'disciplines.php';
+        break;
     default:
         http_response_code(404);
         echo json_encode(['error' => 'Resource not found']);
         break;
 }
+
+$conn->close();
 ?>

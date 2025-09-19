@@ -1,119 +1,91 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, Button, TextInput } from 'react-native';
-import { api } from '../api';
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  Button,
+  TextInput,
+  ScrollView,
+} from 'react-native';
+import { useCrud } from '../hooks/useCrud.js';
 
-// A simple Select component for web
+// Reusable Select component
 const Select = ({ options, value, onValueChange, placeholder }) => (
-  <select 
-    value={value || ''} 
-    onChange={(e) => onValueChange(e.target.value)} 
-    style={{ height: 40, borderColor: '#ccc', borderWidth: 1, marginBottom: 12, paddingHorizontal: 8, borderRadius: 4, backgroundColor: '#fff' }}
-  >
-    {placeholder && <option value="" disabled>{placeholder}</option>}
-    {options.map(option => (
-      <option key={option.value} value={option.value}>{option.label}</option>
-    ))}
+  <select value={value || ''} onChange={(e) => onValueChange(e.target.value)} style={styles.selectInput}>
+    {placeholder && <option value="">{placeholder}</option>}
+    {options.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
   </select>
 );
 
 const Trainings = () => {
-  const [trainings, setTrainings] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { items: trainings, loading, createItem, updateItem, deleteItem } = useCrud('trainings');
+  const { items: branches } = useCrud('branches');
+  const { items: trainers } = useCrud('trainers');
 
-  // Form state
   const [isEditing, setIsEditing] = useState(false);
-  const [currentTraining, setCurrentTraining] = useState({ id: null, branch_id: null, discipline_id: null, trainer_user_id: null, start_time: '', end_time: '', max_attendees: '' });
-
-  // Data for dropdowns
-  const [branches, setBranches] = useState([]);
-  const [trainers, setTrainers] = useState([]);
-  const [disciplines, setDisciplines] = useState([]);
-
-  useEffect(() => {
-    fetchTrainings();
-  }, []);
-
-  const fetchFormData = async () => {
-    try {
-      const [branchesData, trainersData, disciplinesData] = await Promise.all([
-        api.get('/branches.php'),
-        api.get('/trainers.php'),
-        api.get('/disciplines.php'),
-      ]);
-      setBranches(branchesData.branches || []);
-      setTrainers(trainersData.trainers || []);
-      setDisciplines(disciplinesData.disciplines || []);
-    } catch (error) {
-      window.alert("Error fetching form data: " + error.message);
-    }
-  };
-
-  const fetchTrainings = async () => {
-    try {
-      setLoading(true);
-      const data = await api.get('/trainings.php');
-      if (data.success) {
-        setTrainings(data.trainings);
-      } else {
-        window.alert("Error: Failed to fetch trainings.");
-      }
-    } catch (error) {
-      window.alert("Error: " + (error.message || "An unexpected error occurred."));
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [currentItem, setCurrentItem] = useState({
+    id: null,
+    title: 'Football Training',
+    branch_id: '',
+    trainer_user_id: '',
+    start_time: '',
+    end_time: '',
+    max_attendees: '',
+  });
 
   const handleAddNew = () => {
-    fetchFormData();
-    setCurrentTraining({ id: null, branch_id: null, discipline_id: null, trainer_user_id: null, start_time: '', end_time: '', max_attendees: '' });
+    setCurrentItem({ id: null, title: 'Football Training', branch_id: '', trainer_user_id: '', start_time: '', end_time: '', max_attendees: '30' });
     setIsEditing(true);
   };
 
-  const handleEdit = (training) => {
-    fetchFormData();
-    setCurrentTraining(training);
-    setIsEditing(true);
-  };
-
-  const handleDelete = async (training) => {
-    if (window.confirm(`Are you sure you want to delete this training?`)) {
-      try {
-        await api.delete(`/trainings.php?id=${training.id}`);
-        fetchTrainings();
-      } catch (error) {
-        window.alert("Error: " + (error.message || "Failed to delete training."));
+  const handleEdit = (item) => {
+    const sanitizedItem = {
+      ...currentItem, // Start with default structure
+      ...item,       // Override with fetched item data
+    };
+    // Ensure no null values are passed to inputs
+    for (const key in sanitizedItem) {
+      if (sanitizedItem[key] === null || sanitizedItem[key] === undefined) {
+        sanitizedItem[key] = '';
       }
+    }
+    setCurrentItem(sanitizedItem);
+    setIsEditing(true);
+  };
+
+  const handleDelete = async (item) => {
+    if (window.confirm(`Are you sure you want to delete training "${item.title}"?`)) {
+      await deleteItem(item.id);
     }
   };
 
   const handleSave = async () => {
-    if (!currentTraining.branch_id || !currentTraining.discipline_id || !currentTraining.trainer_user_id || !currentTraining.start_time || !currentTraining.end_time) {
-      window.alert("Please fill out all required fields.");
+    const { id, title, branch_id, trainer_user_id, start_time, end_time, max_attendees } = currentItem;
+    if (!title || !branch_id || !trainer_user_id || !start_time || !end_time) {
+      window.alert('Title, Branch, Trainer, and Start/End Times are required.');
       return;
     }
 
     try {
-      if (currentTraining.id) {
-        await api.put(`/trainings.php?id=${currentTraining.id}`, currentTraining);
+      if (id) {
+        await updateItem(id, currentItem);
       } else {
-        await api.post('/trainings.php', currentTraining);
+        await createItem(currentItem);
       }
-      fetchTrainings();
       setIsEditing(false);
     } catch (error) {
-      window.alert("Error: " + (error.message || "Failed to save training."));
+      console.error('Save operation failed:', error);
     }
   };
 
   const renderTrainingItem = ({ item }) => (
     <View style={styles.itemContainer}>
       <View style={styles.itemTextContainer}>
-        <Text style={styles.itemName}>{item.discipline_name}</Text>
+        <Text style={styles.itemName}>{item.title}</Text>
         <Text style={styles.itemDetails}>Branch: {item.branch_name}</Text>
         <Text style={styles.itemDetails}>Trainer: {item.trainer_name}</Text>
         <Text style={styles.itemDetails}>Time: {new Date(item.start_time).toLocaleString()} - {new Date(item.end_time).toLocaleTimeString()}</Text>
-        <Text style={styles.itemDetails}>Max Attendees: {item.max_attendees}</Text>
       </View>
       <View style={styles.buttonsContainer}>
         <Button title="Edit" onPress={() => handleEdit(item)} />
@@ -128,19 +100,20 @@ const Trainings = () => {
 
   if (isEditing) {
     return (
-      <View style={styles.formContainer}>
-        <Text style={styles.title}>{currentTraining.id ? 'Edit Training' : 'Add New Training'}</Text>
-        <Select placeholder="Select Branch..." value={currentTraining.branch_id} onValueChange={(value) => setCurrentTraining({ ...currentTraining, branch_id: value })} options={branches.map(b => ({ label: b.name, value: b.id }))} />
-        <Select placeholder="Select Discipline..." value={currentTraining.discipline_id} onValueChange={(value) => setCurrentTraining({ ...currentTraining, discipline_id: value })} options={disciplines.map(d => ({ label: d.name, value: d.id }))} />
-        <Select placeholder="Select Trainer..." value={currentTraining.trainer_user_id} onValueChange={(value) => setCurrentTraining({ ...currentTraining, trainer_user_id: value })} options={trainers.map(t => ({ label: `${t.first_name} ${t.last_name}`, value: t.id }))} />
-        <TextInput style={styles.input} placeholder="Start Time (YYYY-MM-DD HH:MM:SS)" value={currentTraining.start_time} onChangeText={(text) => setCurrentTraining({ ...currentTraining, start_time: text })} />
-        <TextInput style={styles.input} placeholder="End Time (YYYY-MM-DD HH:MM:SS)" value={currentTraining.end_time} onChangeText={(text) => setCurrentTraining({ ...currentTraining, end_time: text })} />
-        <TextInput style={styles.input} placeholder="Max Attendees" value={currentTraining.max_attendees} onChangeText={(text) => setCurrentTraining({ ...currentTraining, max_attendees: text })} keyboardType="numeric" />
+      <ScrollView style={styles.formContainer}>
+        <Text style={styles.title}>{currentItem.id ? 'Edit Training' : 'Add New Training'}</Text>
+        <TextInput style={styles.input} placeholder="Training Title" value={currentItem.title} onChangeText={(text) => setCurrentItem({ ...currentItem, title: text })} />
+        <Select placeholder="Select Branch..." value={currentItem.branch_id} onValueChange={(value) => setCurrentItem({ ...currentItem, branch_id: value })} options={branches.map((b) => ({ label: b.name, value: b.id }))} />
+        <Select placeholder="Select Trainer..." value={currentItem.trainer_user_id} onValueChange={(value) => setCurrentItem({ ...currentItem, trainer_user_id: value })} options={trainers.map((t) => ({ label: `${t.first_name} ${t.last_name}`, value: t.id }))} />
+        <TextInput style={styles.input} placeholder="Start Time (YYYY-MM-DD HH:MM:SS)" value={currentItem.start_time} onChangeText={(text) => setCurrentItem({ ...currentItem, start_time: text })} />
+        <TextInput style={styles.input} placeholder="End Time (YYYY-MM-DD HH:MM:SS)" value={currentItem.end_time} onChangeText={(text) => setCurrentItem({ ...currentItem, end_time: text })} />
+        <TextInput style={styles.input} placeholder="Max Attendees" value={currentItem.max_attendees} onChangeText={(text) => setCurrentItem({ ...currentItem, max_attendees: text })} keyboardType="numeric" />
+        
         <View style={styles.formButtons}>
           <Button title="Save" onPress={handleSave} />
           <Button title="Cancel" onPress={() => setIsEditing(false)} color="gray" />
         </View>
-      </View>
+      </ScrollView>
     );
   }
 
@@ -163,7 +136,8 @@ const styles = StyleSheet.create({
   buttonsContainer: { flexDirection: 'row', gap: 8 },
   formContainer: { padding: 16, backgroundColor: '#f8f8f8', borderRadius: 8 },
   input: { height: 40, borderColor: '#ccc', borderWidth: 1, marginBottom: 12, paddingHorizontal: 8, borderRadius: 4, backgroundColor: '#fff' },
-  formButtons: { flexDirection: 'row', justifyContent: 'space-around', marginTop: 16 },
+  selectInput: { height: 40, borderColor: '#ccc', borderWidth: 1, marginBottom: 12, paddingHorizontal: 8, borderRadius: 4, backgroundColor: '#fff', width: '100%' },
+  formButtons: { flexDirection: 'row', justifyContent: 'space-around', marginTop: 16, marginBottom: 32 },
 });
 
 export default Trainings;

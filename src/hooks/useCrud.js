@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { api } from '../api';
+import { api } from '../api.js';
 
 export const useCrud = (endpoint) => {
   const [items, setItems] = useState([]);
@@ -8,17 +8,19 @@ export const useCrud = (endpoint) => {
   const fetchItems = useCallback(async () => {
     try {
       setLoading(true);
-      const data = await api.get(`/${endpoint}.php`);
-      // The API returns { success: true, items: [...] } where 'items' is the entity name
-      // e.g., { success: true, branches: [...] }
+      const data = await api.get(`/${endpoint}`);
       const key = endpoint;
-      if (data.success && data[key]) {
+      if (data.success && Array.isArray(data[key])) {
         setItems(data[key]);
       } else {
-        window.alert(`Error: Failed to fetch ${endpoint}.`);
+        // Log the actual data received for debugging
+        console.error(`Failed to fetch ${endpoint}. Unexpected data structure received:`, data);
+        window.alert(`Error: Failed to fetch ${endpoint}. The data format was incorrect.`);
       }
     } catch (error) {
-      window.alert(`Error: ${error.message || `An unexpected error occurred while fetching ${endpoint}.`}`);
+      window.alert(
+        `Error: ${error.message || `An unexpected error occurred while fetching ${endpoint}.`}`
+      );
     } finally {
       setLoading(false);
     }
@@ -30,7 +32,7 @@ export const useCrud = (endpoint) => {
 
   const createItem = async (itemData) => {
     try {
-      await api.post(`/${endpoint}.php`, itemData);
+      await api.post(`/${endpoint}`, itemData);
       fetchItems(); // Refresh list
     } catch (error) {
       window.alert(`Error: ${error.message || `Failed to create item.`}`);
@@ -40,7 +42,7 @@ export const useCrud = (endpoint) => {
 
   const updateItem = async (id, itemData) => {
     try {
-      await api.put(`/${endpoint}.php?id=${id}`, itemData);
+      await api.put(`/${endpoint}/${id}`, itemData);
       fetchItems(); // Refresh list
     } catch (error) {
       window.alert(`Error: ${error.message || `Failed to update item.`}`);
@@ -50,7 +52,7 @@ export const useCrud = (endpoint) => {
 
   const deleteItem = async (id) => {
     try {
-      await api.delete(`/${endpoint}.php?id=${id}`);
+      await api.delete(`/${endpoint}/${id}`);
       fetchItems(); // Refresh list
     } catch (error) {
       window.alert(`Error: ${error.message || `Failed to delete item.`}`);

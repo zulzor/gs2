@@ -1,18 +1,4 @@
 <?php
-session_start();
-
-header("Content-Type: application/json");
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: POST, GET, OPTIONS, PUT, DELETE");
-header("Access-Control-Allow-Headers: Content-Type, Authorization");
-
-require_once __DIR__ . '/../db.php';
-
-// Handle pre-flight OPTIONS request
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
-    exit();
-}
 
 // Check if user is authenticated
 if (!isset($_SESSION['user_id'])) {
@@ -22,8 +8,8 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 $method = $_SERVER['REQUEST_METHOD'];
-$role = $_SESSION['role'];
-$id = isset($_GET['id']) ? intval($_GET['id']) : null;
+$role = $_SESSION['role'] ?? null;
+error_log("Branches: Request method " . $method . ", User ID: " . $_SESSION['user_id'] . ", Role: " . $role);
 
 switch ($method) {
     case 'GET':
@@ -120,5 +106,3 @@ switch ($method) {
         echo json_encode(['error' => 'Method Not Allowed']);
         break;
 }
-
-$conn->close();
