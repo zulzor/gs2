@@ -36,7 +36,7 @@ if (in_array($method, ['POST', 'PUT', 'DELETE'])) {
 
 switch ($method) {
     case 'GET':
-        $sql = "SELECT 
+        $sql = "SELECT DISTINCT
                     pr.id, 
                     pr.child_id, 
                     c.first_name as child_first_name, 
@@ -58,16 +58,30 @@ switch ($method) {
         if ($role === 'manager') {
             // Manager sees all, no filter needed
         } else if ($role === 'trainer') {
-            // Trainers can only see progress for children in their branch
-            $stmt_branch = $conn->prepare("SELECT branch_id FROM user_profiles WHERE user_id = ?");
-            $stmt_branch->bind_param("i", $user_id);
-            $stmt_branch->execute();
-            $trainer_branch_id = $stmt_branch->get_result()->fetch_assoc()['branch_id'];
-            $stmt_branch->close();
+            // Get trainer's branches first
+            $branch_ids_stmt = $conn->prepare("SELECT branch_id FROM user_branch_assignments WHERE user_id = ?");
+            $branch_ids_stmt->bind_param("i", $user_id);
+            $branch_ids_stmt->execute();
+            $result = $branch_ids_stmt->get_result();
+            $branch_ids = [];
+            while($row = $result->fetch_assoc()) {
+                $branch_ids[] = $row['branch_id'];
+            }
+            $branch_ids_stmt->close();
 
-            $sql .= " WHERE c.branch_id = ?";
-            $params[] = $trainer_branch_id;
-            $types .= "i";
+            if (empty($branch_ids)) {
+                // Trainer has no branches, so they can't see any progress
+                echo json_encode(['success' => true, 'progress' => []]);
+                exit();
+            }
+            
+            $in_clause = implode(',', array_fill(0, count($branch_ids), '?'));
+            $sql .= " JOIN child_branch_assignments cba ON c.id = cba.child_id
+                      WHERE cba.branch_id IN ($in_clause)";
+            
+            $params = array_merge($params, $branch_ids);
+            $types .= str_repeat('i', count($branch_ids));
+
         } else if ($role === 'parent') {
             // Parents can only see progress for their own children
             $sql .= " WHERE c.parent_user_id = ?";

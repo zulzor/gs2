@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-nati
 import { useCrud } from '../hooks/useCrud.js';
 import { useAuth } from '../context/AuthContext.js';
 import Progress from './Progress.js'; // Import Progress component
+import ParentTrainings from './ParentTrainings.js'; // Import Trainings component
 
 // Helper to generate a color based on a string (for unique avatars)
 const stringToColor = (str) => {
@@ -34,7 +35,7 @@ const Avatar = ({ name }) => {
 
 const ParentDashboard = () => {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState('children'); // 'children', 'progress', 'news'
+  const [activeTab, setActiveTab] = useState('children'); // 'children', 'progress', 'news', 'trainings'
   const [preselectedChildId, setPreselectedChildId] = useState(null);
 
   const handleViewProgress = (childId) => {
@@ -45,8 +46,9 @@ const ParentDashboard = () => {
   const renderContent = () => {
     switch (activeTab) {
       case 'progress':
-        // We pass the state down as a prop now
-        return <Progress preselectedChildId={preselectedChildId} />;
+        return <Progress preselectedChildId={preselectedChildId} onClearFilter={() => setPreselectedChildId(null)} />;
+      case 'trainings':
+        return <ParentTrainings />;
       case 'news':
         return <Text style={styles.emptyText}>Раздел новостей в разработке.</Text>;
       case 'children':
@@ -64,6 +66,9 @@ const ParentDashboard = () => {
             </TouchableOpacity>
             <TouchableOpacity onPress={() => { setActiveTab('progress'); setPreselectedChildId(null); }} style={[styles.navButton, activeTab === 'progress' && styles.navButtonActive]}>
                 <Text style={[styles.navButtonText, activeTab === 'progress' && styles.navButtonTextActive]}>Прогресс</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setActiveTab('trainings')} style={[styles.navButton, activeTab === 'trainings' && styles.navButtonActive]}>
+                <Text style={[styles.navButtonText, activeTab === 'trainings' && styles.navButtonTextActive]}>Тренировки</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => setActiveTab('news')} style={[styles.navButton, activeTab === 'news' && styles.navButtonActive]}>
                 <Text style={[styles.navButtonText, activeTab === 'news' && styles.navButtonTextActive]}>Новости</Text>

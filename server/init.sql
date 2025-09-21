@@ -99,7 +99,7 @@ CREATE TABLE training_attendance (
     id INT AUTO_INCREMENT PRIMARY KEY,
     training_id INT NOT NULL,
     child_id INT NOT NULL,
-    status ENUM('present', 'absent', 'excused') NOT NULL DEFAULT 'absent',
+    status ENUM('present', 'absent', 'excused', 'enrolled') NOT NULL DEFAULT 'enrolled',
     marked_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (training_id) REFERENCES trainings(id) ON DELETE CASCADE,
     FOREIGN KEY (child_id) REFERENCES children(id) ON DELETE CASCADE,
