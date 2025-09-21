@@ -12,7 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 session_start();
-require_once '../db.php';
+require_once __DIR__ . '/../db.php';
 
 $method = $_SERVER['REQUEST_METHOD'];
 
@@ -53,7 +53,7 @@ switch ($method) {
         if (isset($_GET['logout']) && $_GET['logout'] === 'true') {
             session_unset();
             session_destroy();
-            echo json_encode(['success' => true, 'message' => 'Logged out successfully']);
+            echo json_encode(['success' => true, 'loggedIn' => false, 'message' => 'Logged out successfully']);
         } else if (isset($_SESSION['user_id'])) {
             $userId = $_SESSION['user_id'];
             $stmt = $conn->prepare("SELECT u.id, u.email, u.role, up.first_name, up.last_name FROM users u JOIN user_profiles up ON u.id = up.user_id WHERE u.id = ?");
@@ -63,7 +63,7 @@ switch ($method) {
             
             if ($user = $result->fetch_assoc()) {
                 echo json_encode([
-                    'success' => true,
+                    'loggedIn' => true, // Align with frontend expectation
                     'user' => [
                         'id' => $user['id'],
                         'email' => $user['email'],
@@ -74,12 +74,12 @@ switch ($method) {
                 ]);
             } else {
                 http_response_code(401);
-                echo json_encode(['success' => false, 'message' => 'User not found in session.']);
+                echo json_encode(['loggedIn' => false, 'message' => 'User not found in session.']);
             }
             $stmt->close();
         } else {
             http_response_code(401);
-            echo json_encode(['success' => false, 'message' => 'Not logged in']);
+            echo json_encode(['loggedIn' => false, 'message' => 'Not logged in']);
         }
         break;
 

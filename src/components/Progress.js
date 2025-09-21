@@ -116,10 +116,12 @@ const Progress = () => {
         <Select placeholder="1. Выберите ребенка..." options={childOptions} value={currentProgress.child_id} onValueChange={(value) => setCurrentProgress({ ...currentProgress, child_id: value, training_id: '', discipline_id: '' })} />
         <Select placeholder={isLoadingTrainings ? "Загрузка тренировок..." : "2. Выберите тренировку (для даты)..."} options={trainingOptions} value={currentProgress.training_id} onValueChange={(value) => setCurrentProgress({ ...currentProgress, training_id: value })} disabled={!currentProgress.child_id || isLoadingTrainings} />
         <Select placeholder="3. Выберите упражнение..." options={disciplineOptions} value={currentProgress.discipline_id} onValueChange={(value) => setCurrentProgress({ ...currentProgress, discipline_id: value })} disabled={!currentProgress.child_id} />
+        
         <View style={styles.valueContainer}>
           <TextInput style={styles.input} placeholder="4. Введите значение..." keyboardType="numeric" value={currentProgress.value} onChangeText={(text) => setCurrentProgress({ ...currentProgress, value: text.replace(/[^0-9.]/g, '') })} />
-          {measurementType && <Text style={styles.unitText}>({measurementType})</Text>}
+          {measurementType ? <Text style={styles.unitText}>({measurementType})</Text> : null}
         </View>
+
         <TextInput style={styles.input} placeholder="Заметки (необязательно)" value={currentProgress.notes} onChangeText={(text) => setCurrentProgress({ ...currentProgress, notes: text })} multiline />
         <View style={styles.formButtons}>
           <Button title="Сохранить" onPress={handleSave} />

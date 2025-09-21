@@ -126,11 +126,11 @@ INSERT INTO branches (name, address) VALUES ('Central', '1 Main St'), ('North', 
 
 -- Users
 INSERT INTO users (id, email, password_hash, role) VALUES 
-(1, 'manager@school.com', '$2y$10$0O1ZPidg.WaJxl/NIpeZ3.GEsIH6Kr4qUh..Q7yX.Xa.IfTb3T5p2', 'manager'),
-(2, 'trainer1@school.com', '$2y$10$0O1ZPidg.WaJxl/NIpeZ3.GEsIH6Kr4qUh..Q7yX.Xa.IfTb3T5p2', 'trainer'),
-(3, 'trainer2@school.com', '$2y$10$0O1ZPidg.WaJxl/NIpeZ3.GEsIH6Kr4qUh..Q7yX.Xa.IfTb3T5p2', 'trainer'),
-(4, 'parent1@school.com', '$2y$10$0O1ZPidg.WaJxl/NIpeZ3.GEsIH6Kr4qUh..Q7yX.Xa.IfTb3T5p2', 'parent'),
-(5, 'parent2@school.com', '$2y$10$0O1ZPidg.WaJxl/NIpeZ3.GEsIH6Kr4qUh..Q7yX.Xa.IfTb3T5p2', 'parent');
+(1, 'manager@school.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'manager'),
+(2, 'trainer1@school.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'trainer'),
+(3, 'trainer2@school.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'trainer'),
+(4, 'parent1@school.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'parent'),
+(5, 'parent2@school.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'parent');
 
 -- User Profiles
 INSERT INTO user_profiles (user_id, first_name, last_name, phone_number) VALUES 

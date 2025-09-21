@@ -24,7 +24,7 @@ const ChildDashboard = () => {
             <Text style={styles.disciplineName}>{p.discipline_name}</Text>
             <Text style={styles.progressDetail}>Дата: {p.date}</Text>
             <Text style={styles.progressDetail}>Значение: <Text style={styles.progressValue}>{p.value}</Text> ({p.measurement_type})</Text>
-            {p.notes && <Text style={styles.progressDetail}>Заметки: {p.notes}</Text>}
+            {p.notes ? <Text style={styles.progressDetail}>Заметки: {p.notes}</Text> : null}
           </View>
         ))
       )}

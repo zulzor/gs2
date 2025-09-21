@@ -3,6 +3,7 @@ const API_BASE_URL = '/api'; // URL для прокси в webpack
 async function request(endpoint, method = 'GET', data = null) {
   const config = {
     method,
+    credentials: 'include', // Добавляем эту строку для отправки cookies
     headers: {
       'Content-Type': 'application/json',
     },

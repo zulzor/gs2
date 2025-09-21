@@ -115,7 +115,7 @@ const Subscriptions = () => {
           Trainings: {item.trainings_remaining} / {item.trainings_total}
         </Text>
         <Text style={styles.itemDetails}>Purchase Date: {item.purchase_date}</Text>
-        {item.expiry_date && <Text style={styles.itemDetails}>Expiry Date: {item.expiry_date}</Text>}
+        {item.expiry_date ? <Text style={styles.itemDetails}>Expiry Date: {item.expiry_date}</Text> : null}
       </View>
       <View style={styles.buttonsContainer}>
         <Button title="Edit" onPress={() => handleEdit(item)} />

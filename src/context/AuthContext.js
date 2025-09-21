@@ -11,7 +11,7 @@ export const AuthProvider = ({ children }) => {
     // Check for active session when the app loads
     const checkSession = async () => {
       try {
-        const data = await api.get('/auth.php');
+        const data = await api.get('/auth');
         if (data.loggedIn) {
           setUser(data.user); // Use the full user object from the session
         }
@@ -28,7 +28,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const data = await api.post('/auth.php', { email, password });
+      const data = await api.post('/auth', { email, password });
       if (data.success) {
         setUser(data.user);
       }
