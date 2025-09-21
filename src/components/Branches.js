@@ -37,7 +37,7 @@ const Branches = () => {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this branch?')) {
+    if (window.confirm('Вы уверены, что хотите удалить этот филиал?')) {
       await deleteItem(id);
     }
   };
@@ -45,7 +45,7 @@ const Branches = () => {
   const handleSave = async () => {
     const { id, name, address } = currentBranch;
     if (!name) {
-      window.alert('Validation: Branch name is required.');
+      window.alert('Валидация: Название филиала обязательно.');
       return;
     }
 
@@ -69,9 +69,9 @@ const Branches = () => {
         <Text style={styles.itemAddress}>{item.address}</Text>
       </View>
       <View style={styles.buttonsContainer}>
-        <Button title="Edit" onPress={() => handleEdit(item)} />
+        <Button title="Редактировать" onPress={() => handleEdit(item)} />
         <Button
-          title="Delete"
+          title="Удалить"
           onPress={() => handleDelete(item.id)}
           color="#D40026"
         />
@@ -80,18 +80,18 @@ const Branches = () => {
   );
 
   if (loading) {
-    return <Text>Loading branches...</Text>;
+    return <Text>Загрузка филиалов...</Text>;
   }
 
   if (isEditing) {
     return (
       <View style={styles.formContainer}>
         <Text style={styles.formTitle}>
-          {currentBranch.id ? 'Edit Branch' : 'Create Branch'}
+          {currentBranch.id ? 'Редактировать филиал' : 'Создать филиал'}
         </Text>
         <TextInput
           style={styles.input}
-          placeholder="Branch Name"
+          placeholder="Название филиала"
           value={currentBranch.name}
           onChangeText={(text) =>
             setCurrentBranch({ ...currentBranch, name: text })
@@ -99,16 +99,16 @@ const Branches = () => {
         />
         <TextInput
           style={styles.input}
-          placeholder="Address"
+          placeholder="Адрес"
           value={currentBranch.address}
           onChangeText={(text) =>
             setCurrentBranch({ ...currentBranch, address: text })
           }
         />
         <View style={styles.formButtons}>
-          <Button title="Save" onPress={handleSave} />
+          <Button title="Сохранить" onPress={handleSave} />
           <Button
-            title="Cancel"
+            title="Отмена"
             onPress={() => setIsEditing(false)}
             color="gray"
           />
@@ -119,8 +119,8 @@ const Branches = () => {
 
   return (
     <View>
-      <Text style={styles.title}>Manage Branches</Text>
-      <Button title="Create New Branch" onPress={handleAddNew} />
+      <Text style={styles.title}>Управление филиалами</Text>
+      <Button title="Создать новый филиал" onPress={handleAddNew} />
       <FlatList
         data={branches}
         renderItem={renderBranchItem}

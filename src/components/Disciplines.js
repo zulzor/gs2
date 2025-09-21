@@ -64,7 +64,7 @@ const Disciplines = () => {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this discipline?')) {
+    if (window.confirm('Вы уверены, что хотите удалить эту дисциплину?')) {
       await deleteItem(id);
     }
   };
@@ -73,7 +73,7 @@ const Disciplines = () => {
     const { id, name, measurement_type } = currentDiscipline;
     if (!name || !measurement_type) {
       window.alert(
-        'Validation: Discipline name and measurement type are required.'
+        'Валидация: Название дисциплины и тип измерения обязательны.'
       );
       return;
     }
@@ -99,9 +99,9 @@ const Disciplines = () => {
         </Text>
       </View>
       <View style={styles.buttonsContainer}>
-        <Button title="Edit" onPress={() => handleEdit(item)} />
+        <Button title="Редактировать" onPress={() => handleEdit(item)} />
         <Button
-          title="Delete"
+          title="Удалить"
           onPress={() => handleDelete(item.id)}
           color="#D40026"
         />

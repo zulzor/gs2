@@ -18,7 +18,7 @@ const Select = ({ options, value, onValueChange, placeholder }) => (
     onChange={(e) => onValueChange(e.target.value)}
     style={styles.selectInput}
   >
-    {placeholder && <option value="">{placeholder}</option>}
+    {placeholder ? <option value="">{placeholder}</option> : null}
     {options.map((option) => (
       <option key={option.value} value={option.value}>
         {option.label}
@@ -92,7 +92,7 @@ const Children = () => {
   };
 
   const handleDelete = async (child) => {
-    if (window.confirm(`Are you sure you want to delete ${child.first_name} ${child.last_name}?`)) {
+    if (window.confirm(`Вы уверены, что хотите удалить ${child.first_name} ${child.last_name}?`)) {
       await deleteItem(child.id);
     }
   };
@@ -100,7 +100,7 @@ const Children = () => {
   const handleSave = async () => {
     const { id, first_name, last_name, date_of_birth, parent_user_id, branch_ids } = currentChild;
     if (!first_name || !last_name || !date_of_birth) {
-      window.alert('First name, last name, and date of birth are required.');
+      window.alert('Имя, фамилия и дата рождения обязательны.');
       return;
     }
 
@@ -128,12 +128,12 @@ const Children = () => {
     <View style={styles.itemContainer}>
       <View style={styles.itemTextContainer}>
         <Text style={styles.itemName}>{item.first_name} {item.last_name}</Text>
-        <Text style={styles.itemDetails}>Branches: {item.branch_names ? item.branch_names.join(', ') : 'N/A'}</Text>
-        <Text style={styles.itemDetails}>Parent: {item.parent_email || 'N/A'}</Text>
+        <Text style={styles.itemDetails}>Филиалы: {item.branch_names ? item.branch_names.join(', ') : 'Не указаны'}</Text>
+        <Text style={styles.itemDetails}>Родитель: {item.parent_email || 'Не указан'}</Text>
       </View>
       <View style={styles.buttonsContainer}>
-        <Button title="Edit" onPress={() => handleEdit(item)} />
-        <Button title="Delete" onPress={() => handleDelete(item)} color="#D40026" />
+        <Button title="Редактировать" onPress={() => handleEdit(item)} />
+        <Button title="Удалить" onPress={() => handleDelete(item)} color="#D40026" />
       </View>
     </View>
   );
@@ -141,34 +141,34 @@ const Children = () => {
   const parentOptions = parents.map((p) => ({ label: `${p.first_name} ${p.last_name} (${p.email})`, value: p.id.toString() }));
 
   if (loading) {
-    return <Text>Loading children...</Text>;
+    return <Text>Загрузка списка детей...</Text>;
   }
 
   if (isEditing) {
     return (
       <ScrollView style={styles.formContainer}>
-        <Text style={styles.title}>{currentChild.id ? 'Edit Child' : 'Add New Child'}</Text>
-        <TextInput style={styles.input} placeholder="First Name" value={currentChild.first_name} onChangeText={(text) => setCurrentChild({ ...currentChild, first_name: text })} />
-        <TextInput style={styles.input} placeholder="Last Name" value={currentChild.last_name} onChangeText={(text) => setCurrentChild({ ...currentChild, last_name: text })} />
-        <TextInput style={styles.input} placeholder="Date of Birth (YYYY-MM-DD)" value={currentChild.date_of_birth} onChangeText={(text) => setCurrentChild({ ...currentChild, date_of_birth: text })} />
+        <Text style={styles.title}>{currentChild.id ? 'Редактировать данные ребенка' : 'Добавить нового ребенка'}</Text>
+        <TextInput style={styles.input} placeholder="Имя" value={currentChild.first_name} onChangeText={(text) => setCurrentChild({ ...currentChild, first_name: text })} />
+        <TextInput style={styles.input} placeholder="Фамилия" value={currentChild.last_name} onChangeText={(text) => setCurrentChild({ ...currentChild, last_name: text })} />
+        <TextInput style={styles.input} placeholder="Дата рождения (ГГГГ-ММ-ДД)" value={currentChild.date_of_birth} onChangeText={(text) => setCurrentChild({ ...currentChild, date_of_birth: text })} />
         
         <Select
-          placeholder="Select Parent (Optional)..."
+          placeholder="Выберите родителя (необязательно)..."
           value={currentChild.parent_user_id}
           onValueChange={(value) => setCurrentChild({ ...currentChild, parent_user_id: value })}
           options={parentOptions}
         />
 
         <MultiSelectCheckboxes 
-            title="Branches"
+            title="Филиалы"
             options={branches}
             selectedIds={currentChild.branch_ids}
             onSelectionChange={(ids) => setCurrentChild({ ...currentChild, branch_ids: ids })}
         />
 
         <View style={styles.formButtons}>
-          <Button title="Save" onPress={handleSave} />
-          <Button title="Cancel" onPress={() => setIsEditing(false)} color="gray" />
+          <Button title="Сохранить" onPress={handleSave} />
+          <Button title="Отмена" onPress={() => setIsEditing(false)} color="gray" />
         </View>
       </ScrollView>
     );
@@ -176,8 +176,8 @@ const Children = () => {
 
   return (
     <View>
-      <Text style={styles.title}>Manage Children</Text>
-      <Button title="Add New Child" onPress={handleAddNew} />
+      <Text style={styles.title}>Управление детьми</Text>
+      <Button title="Добавить нового ребенка" onPress={handleAddNew} />
       <FlatList data={children} renderItem={renderChildItem} keyExtractor={(item) => item.id.toString()} style={styles.list} />
     </View>
   );

@@ -13,13 +13,14 @@ import { api } from '../api.js';
 
 const Select = ({ options, value, onValueChange, placeholder, disabled = false }) => (
   <select value={value || ''} onChange={(e) => onValueChange(e.target.value)} style={styles.selectInput} disabled={disabled}>
-    {placeholder && <option value="">{placeholder}</option>}
+    {placeholder ? <option value="">{placeholder}</option> : null}
     {options.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
   </select>
 );
 
-const Progress = () => {
+const Progress = ({ preselectedChildId, onClearFilter }) => { // Accept preselectedChildId and a clear function as props
   const { user } = useAuth();
+
   const { items: progressRecords, loading: loadingProgress, createItem, updateItem, deleteItem } = useCrud('progress');
   const { items: children, loading: loadingChildren } = useCrud('children');
   const { items: allDisciplines, loading: loadingDisciplines } = useCrud('disciplines');
@@ -51,7 +52,14 @@ const Progress = () => {
   const measurementType = allDisciplines.find(d => d.id == currentProgress.discipline_id)?.measurement_type || '';
 
   const handleAddNew = () => {
-    setCurrentProgress({ id: null, child_id: '', discipline_id: '', training_id: '', value: '', notes: '' });
+    setCurrentProgress({ 
+        id: null, 
+        child_id: preselectedChildId ? preselectedChildId.toString() : '', 
+        discipline_id: '', 
+        training_id: '', 
+        value: '', 
+        notes: '' 
+    });
     setIsEditing(true);
   };
 
@@ -105,6 +113,24 @@ const Progress = () => {
   const trainingOptions = availableTrainings.map((training) => ({ label: `${training.title} - ${training.start_time}`, value: training.id.toString() }));
   const disciplineOptions = allDisciplines.map((discipline) => ({ label: discipline.name, value: discipline.id.toString() }));
 
+  const filteredProgressRecords = preselectedChildId 
+    ? progressRecords.filter(p => p.child_id.toString() === preselectedChildId.toString())
+    : progressRecords;
+    
+  const selectedChild = preselectedChildId 
+    ? children.find(c => c.id.toString() === preselectedChildId.toString()) 
+    : null;
+
+  const EmptyListComponent = () => (
+    <View style={styles.emptyContainer}>
+        <Text style={styles.emptyText}>
+            {preselectedChildId 
+                ? 'Для этого ребенка пока нет записей о прогрессе.' 
+                : 'Записей о прогрессе пока нет.'}
+        </Text>
+    </View>
+  );
+
   if (loadingProgress || loadingChildren || loadingDisciplines) {
     return <Text>Загрузка данных...</Text>;
   }
@@ -113,15 +139,13 @@ const Progress = () => {
     return (
       <View style={styles.formContainer}>
         <Text style={styles.formTitle}>{currentProgress.id ? 'Редактировать запись о прогрессе' : 'Создать запись о прогрессе'}</Text>
-        <Select placeholder="1. Выберите ребенка..." options={childOptions} value={currentProgress.child_id} onValueChange={(value) => setCurrentProgress({ ...currentProgress, child_id: value, training_id: '', discipline_id: '' })} />
+        <Select placeholder="1. Выберите ребенка..." options={childOptions} value={currentProgress.child_id} onValueChange={(value) => setCurrentProgress({ ...currentProgress, child_id: value, training_id: '', discipline_id: '' })} disabled={!!preselectedChildId} />
         <Select placeholder={isLoadingTrainings ? "Загрузка тренировок..." : "2. Выберите тренировку (для даты)..."} options={trainingOptions} value={currentProgress.training_id} onValueChange={(value) => setCurrentProgress({ ...currentProgress, training_id: value })} disabled={!currentProgress.child_id || isLoadingTrainings} />
         <Select placeholder="3. Выберите упражнение..." options={disciplineOptions} value={currentProgress.discipline_id} onValueChange={(value) => setCurrentProgress({ ...currentProgress, discipline_id: value })} disabled={!currentProgress.child_id} />
-        
         <View style={styles.valueContainer}>
           <TextInput style={styles.input} placeholder="4. Введите значение..." keyboardType="numeric" value={currentProgress.value} onChangeText={(text) => setCurrentProgress({ ...currentProgress, value: text.replace(/[^0-9.]/g, '') })} />
           {measurementType ? <Text style={styles.unitText}>({measurementType})</Text> : null}
         </View>
-
         <TextInput style={styles.input} placeholder="Заметки (необязательно)" value={currentProgress.notes} onChangeText={(text) => setCurrentProgress({ ...currentProgress, notes: text })} multiline />
         <View style={styles.formButtons}>
           <Button title="Сохранить" onPress={handleSave} />
@@ -138,20 +162,38 @@ const Progress = () => {
         <Text style={styles.itemDetails}>Дисциплина: {item.discipline_name}</Text>
         <Text style={styles.itemDetails}>Дата: {item.date}</Text>
         <Text style={styles.itemDetails}>Значение: {item.value} ({item.measurement_type})</Text>
-        {item.notes && <Text style={styles.itemDetails}>Заметки: {item.notes}</Text>}
+        {item.notes ? <Text style={styles.itemDetails}>Заметки: {item.notes}</Text> : null}
       </View>
-      <View style={styles.buttonsContainer}>
-        <Button title="Edit" onPress={() => handleEdit(item)} />
-        <Button title="Delete" onPress={() => handleDelete(item.id)} color="#D40026" />
-      </View>
+      {isManagerOrTrainer ? (
+        <View style={styles.buttonsContainer}>
+            <Button title="Редактировать" onPress={() => handleEdit(item)} />
+            <Button title="Удалить" onPress={() => handleDelete(item.id)} color="#D40026" />
+        </View>
+      ) : null}
     </View>
   );
 
   return (
     <View>
-      <Text style={styles.title}>Управление прогрессом</Text>
-      {isManagerOrTrainer && <Button title="Добавить новую запись о прогрессе" onPress={handleAddNew} />}
-      <FlatList data={progressRecords} renderItem={renderProgressItem} keyExtractor={(item) => item.id.toString()} style={styles.list} />
+      <Text style={styles.title}>
+        {user?.role === 'parent' ? 'Отслеживание прогресса' : 'Управление прогрессом'}
+      </Text>
+      
+      {selectedChild ? (
+        <View style={styles.filterHeader}>
+          <Text style={styles.filterTitle}>Прогресс для: {selectedChild.first_name} {selectedChild.last_name}</Text>
+          {onClearFilter ? <Button title="Показать всех" onPress={onClearFilter} /> : null}
+        </View>
+      ) : null}
+
+      {isManagerOrTrainer ? <Button title="Добавить новую запись о прогрессе" onPress={handleAddNew} /> : null}
+      <FlatList 
+        data={filteredProgressRecords} 
+        renderItem={renderProgressItem} 
+        keyExtractor={(item) => item.id.toString()} 
+        style={styles.list}
+        ListEmptyComponent={EmptyListComponent}
+      />
     </View>
   );
 };
@@ -171,6 +213,29 @@ const styles = StyleSheet.create({
   formTitle: { fontSize: 20, fontWeight: 'bold', marginBottom: 16 },
   valueContainer: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
   unitText: { marginLeft: 8, fontSize: 16, color: '#666' },
+  filterHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 8,
+    backgroundColor: '#e7f3ff',
+    borderRadius: 5,
+    marginBottom: 16,
+  },
+  filterTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#063672',
+  },
+  emptyContainer: {
+    marginTop: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#666',
+  },
 });
 
 export default Progress;

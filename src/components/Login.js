@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
   const [email, setEmail] = useState('manager@school.com'); // Demo user
-  const [password, setPassword] = useState('admin'); // Corrected demo password
+  const [password, setPassword] = useState('password'); // Corrected demo password
   const [error, setError] = useState('');
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -16,20 +16,20 @@ const Login = () => {
       await login(email, password);
       navigate('/'); // Navigate to dashboard on successful login
     } catch (err) {
-      setError(err.message || 'Failed to login');
+      setError(err.message || 'Ошибка входа');
       Alert.alert(
-        'Login Failed',
-        err.message || 'Please check your credentials.'
+        'Ошибка входа',
+        err.message || 'Пожалуйста, проверьте ваши данные.'
       );
     }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Football School CRM</Text>
+      <Text style={styles.title}>Футбольная Школа "Арсенал"</Text>
       <TextInput
         style={styles.input}
-        placeholder="Email"
+        placeholder="Электронная почта"
         value={email}
         onChangeText={setEmail}
         keyboardType="email-address"
@@ -37,13 +37,13 @@ const Login = () => {
       />
       <TextInput
         style={styles.input}
-        placeholder="Password"
+        placeholder="Пароль"
         value={password}
         onChangeText={setPassword}
         secureTextEntry
       />
       {error ? <Text style={styles.errorText}>{error}</Text> : null}
-      <Button title="Login" onPress={handleLogin} />
+      <Button title="Войти" onPress={handleLogin} />
     </View>
   );
 };

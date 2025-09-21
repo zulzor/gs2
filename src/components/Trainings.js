@@ -13,7 +13,7 @@ import { useCrud } from '../hooks/useCrud.js';
 // Reusable Select component
 const Select = ({ options, value, onValueChange, placeholder }) => (
   <select value={value || ''} onChange={(e) => onValueChange(e.target.value)} style={styles.selectInput}>
-    {placeholder && <option value="">{placeholder}</option>}
+    {placeholder ? <option value="">{placeholder}</option> : null}
     {options.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
   </select>
 );
@@ -26,7 +26,7 @@ const Trainings = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [currentItem, setCurrentItem] = useState({
     id: null,
-    title: 'Football Training',
+    title: 'Тренировка по футболу',
     branch_id: '',
     trainer_user_id: '',
     start_time: '',
@@ -35,7 +35,7 @@ const Trainings = () => {
   });
 
   const handleAddNew = () => {
-    setCurrentItem({ id: null, title: 'Football Training', branch_id: '', trainer_user_id: '', start_time: '', end_time: '', max_attendees: '30' });
+    setCurrentItem({ id: null, title: 'Тренировка по футболу', branch_id: '', trainer_user_id: '', start_time: '', end_time: '', max_attendees: '30' });
     setIsEditing(true);
   };
 
@@ -55,7 +55,7 @@ const Trainings = () => {
   };
 
   const handleDelete = async (item) => {
-    if (window.confirm(`Are you sure you want to delete training "${item.title}"?`)) {
+    if (window.confirm(`Вы уверены, что хотите удалить тренировку "${item.title}"?`)) {
       await deleteItem(item.id);
     }
   };
@@ -63,7 +63,7 @@ const Trainings = () => {
   const handleSave = async () => {
     const { id, title, branch_id, trainer_user_id, start_time, end_time, max_attendees } = currentItem;
     if (!title || !branch_id || !trainer_user_id || !start_time || !end_time) {
-      window.alert('Title, Branch, Trainer, and Start/End Times are required.');
+      window.alert('Название, филиал, тренер и время начала/окончания обязательны.');
       return;
     }
 
@@ -83,35 +83,35 @@ const Trainings = () => {
     <View style={styles.itemContainer}>
       <View style={styles.itemTextContainer}>
         <Text style={styles.itemName}>{item.title}</Text>
-        <Text style={styles.itemDetails}>Branch: {item.branch_name}</Text>
-        <Text style={styles.itemDetails}>Trainer: {item.trainer_name}</Text>
-        <Text style={styles.itemDetails}>Time: {new Date(item.start_time).toLocaleString()} - {new Date(item.end_time).toLocaleTimeString()}</Text>
+        <Text style={styles.itemDetails}>Филиал: {item.branch_name}</Text>
+        <Text style={styles.itemDetails}>Тренер: {item.trainer_name}</Text>
+        <Text style={styles.itemDetails}>Время: {new Date(item.start_time).toLocaleString()} - {new Date(item.end_time).toLocaleTimeString()}</Text>
       </View>
       <View style={styles.buttonsContainer}>
-        <Button title="Edit" onPress={() => handleEdit(item)} />
-        <Button title="Delete" onPress={() => handleDelete(item)} color="#D40026" />
+        <Button title="Редактировать" onPress={() => handleEdit(item)} />
+        <Button title="Удалить" onPress={() => handleDelete(item)} color="#D40026" />
       </View>
     </View>
   );
 
   if (loading) {
-    return <Text>Loading trainings...</Text>;
+    return <Text>Загрузка тренировок...</Text>;
   }
 
   if (isEditing) {
     return (
       <ScrollView style={styles.formContainer}>
-        <Text style={styles.title}>{currentItem.id ? 'Edit Training' : 'Add New Training'}</Text>
-        <TextInput style={styles.input} placeholder="Training Title" value={currentItem.title} onChangeText={(text) => setCurrentItem({ ...currentItem, title: text })} />
-        <Select placeholder="Select Branch..." value={currentItem.branch_id} onValueChange={(value) => setCurrentItem({ ...currentItem, branch_id: value })} options={branches.map((b) => ({ label: b.name, value: b.id }))} />
-        <Select placeholder="Select Trainer..." value={currentItem.trainer_user_id} onValueChange={(value) => setCurrentItem({ ...currentItem, trainer_user_id: value })} options={trainers.map((t) => ({ label: `${t.first_name} ${t.last_name}`, value: t.id }))} />
-        <TextInput style={styles.input} placeholder="Start Time (YYYY-MM-DD HH:MM:SS)" value={currentItem.start_time} onChangeText={(text) => setCurrentItem({ ...currentItem, start_time: text })} />
-        <TextInput style={styles.input} placeholder="End Time (YYYY-MM-DD HH:MM:SS)" value={currentItem.end_time} onChangeText={(text) => setCurrentItem({ ...currentItem, end_time: text })} />
-        <TextInput style={styles.input} placeholder="Max Attendees" value={currentItem.max_attendees} onChangeText={(text) => setCurrentItem({ ...currentItem, max_attendees: text })} keyboardType="numeric" />
+        <Text style={styles.title}>{currentItem.id ? 'Редактировать тренировку' : 'Добавить новую тренировку'}</Text>
+        <TextInput style={styles.input} placeholder="Название тренировки" value={currentItem.title} onChangeText={(text) => setCurrentItem({ ...currentItem, title: text })} />
+        <Select placeholder="Выберите филиал..." value={currentItem.branch_id} onValueChange={(value) => setCurrentItem({ ...currentItem, branch_id: value })} options={branches.map((b) => ({ label: b.name, value: b.id }))} />
+        <Select placeholder="Выберите тренера..." value={currentItem.trainer_user_id} onValueChange={(value) => setCurrentItem({ ...currentItem, trainer_user_id: value })} options={trainers.map((t) => ({ label: `${t.first_name} ${t.last_name}`, value: t.id }))} />
+        <TextInput style={styles.input} placeholder="Время начала (ГГГГ-ММ-ДД ЧЧ:ММ:СС)" value={currentItem.start_time} onChangeText={(text) => setCurrentItem({ ...currentItem, start_time: text })} />
+        <TextInput style={styles.input} placeholder="Время окончания (ГГГГ-ММ-ДД ЧЧ:ММ:СС)" value={currentItem.end_time} onChangeText={(text) => setCurrentItem({ ...currentItem, end_time: text })} />
+        <TextInput style={styles.input} placeholder="Макс. участников" value={currentItem.max_attendees} onChangeText={(text) => setCurrentItem({ ...currentItem, max_attendees: text })} keyboardType="numeric" />
         
         <View style={styles.formButtons}>
-          <Button title="Save" onPress={handleSave} />
-          <Button title="Cancel" onPress={() => setIsEditing(false)} color="gray" />
+          <Button title="Сохранить" onPress={handleSave} />
+          <Button title="Отмена" onPress={() => setIsEditing(false)} color="gray" />
         </View>
       </ScrollView>
     );
@@ -119,8 +119,8 @@ const Trainings = () => {
 
   return (
     <View>
-      <Text style={styles.title}>Manage Trainings</Text>
-      <Button title="Add New Training" onPress={handleAddNew} />
+      <Text style={styles.title}>Управление тренировками</Text>
+      <Button title="Добавить новую тренировку" onPress={handleAddNew} />
       <FlatList data={trainings} renderItem={renderTrainingItem} keyExtractor={(item) => item.id.toString()} style={styles.list} />
     </View>
   );

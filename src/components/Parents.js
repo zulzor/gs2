@@ -46,7 +46,7 @@ const Parents = () => {
   const handleDelete = async (item) => {
     if (
       window.confirm(
-        `Are you sure you want to delete parent ${item.first_name} ${item.last_name}?`
+        `Вы уверены, что хотите удалить родителя ${item.first_name} ${item.last_name}?`
       )
     ) {
       await deleteItem(item.id);
@@ -58,7 +58,7 @@ const Parents = () => {
       currentItem;
     if (!first_name || !last_name || !email) {
       window.alert(
-        'Validation Error: First name, last name, and email are required.'
+        'Ошибка валидации: Имя, фамилия и email обязательны.'
       );
       return;
     }
@@ -69,7 +69,7 @@ const Parents = () => {
       } else {
         if (!password) {
           window.alert(
-            'Validation Error: Password is required for a new parent.'
+            'Ошибка валидации: Пароль обязателен для нового родителя.'
           );
           return;
         }
@@ -94,12 +94,12 @@ const Parents = () => {
           {item.first_name} {item.last_name}
         </Text>
         <Text style={styles.itemDetails}>Email: {item.email}</Text>
-        <Text style={styles.itemDetails}>Phone: {item.phone_number}</Text>
+        <Text style={styles.itemDetails}>Телефон: {item.phone_number}</Text>
       </View>
       <View style={styles.buttonsContainer}>
-        <Button title="Edit" onPress={() => handleEdit(item)} />
+        <Button title="Редактировать" onPress={() => handleEdit(item)} />
         <Button
-          title="Delete"
+          title="Удалить"
           onPress={() => handleDelete(item)}
           color="#D40026"
         />
@@ -108,18 +108,18 @@ const Parents = () => {
   );
 
   if (loading) {
-    return <Text>Loading parents...</Text>;
+    return <Text>Загрузка списка родителей...</Text>;
   }
 
   if (isEditing) {
     return (
       <View style={styles.formContainer}>
         <Text style={styles.title}>
-          {currentItem.id ? 'Edit Parent' : 'Add New Parent'}
+          {currentItem.id ? 'Редактировать данные родителя' : 'Добавить нового родителя'}
         </Text>
         <TextInput
           style={styles.input}
-          placeholder="First Name"
+          placeholder="Имя"
           value={currentItem.first_name}
           onChangeText={(text) =>
             setCurrentItem({ ...currentItem, first_name: text })
@@ -127,7 +127,7 @@ const Parents = () => {
         />
         <TextInput
           style={styles.input}
-          placeholder="Last Name"
+          placeholder="Фамилия"
           value={currentItem.last_name}
           onChangeText={(text) =>
             setCurrentItem({ ...currentItem, last_name: text })
@@ -145,7 +145,7 @@ const Parents = () => {
         />
         <TextInput
           style={styles.input}
-          placeholder="Phone Number"
+          placeholder="Номер телефона"
           value={currentItem.phone_number}
           onChangeText={(text) =>
             setCurrentItem({ ...currentItem, phone_number: text })
@@ -155,7 +155,7 @@ const Parents = () => {
         {!currentItem.id && (
           <TextInput
             style={styles.input}
-            placeholder="Password"
+            placeholder="Пароль"
             onChangeText={(text) =>
               setCurrentItem({ ...currentItem, password: text })
             }
@@ -163,9 +163,9 @@ const Parents = () => {
           />
         )}
         <View style={styles.formButtons}>
-          <Button title="Save" onPress={handleSave} />
+          <Button title="Сохранить" onPress={handleSave} />
           <Button
-            title="Cancel"
+            title="Отмена"
             onPress={() => setIsEditing(false)}
             color="gray"
           />
@@ -176,8 +176,8 @@ const Parents = () => {
 
   return (
     <View>
-      <Text style={styles.title}>Manage Parents</Text>
-      <Button title="Add New Parent" onPress={handleAddNew} />
+      <Text style={styles.title}>Управление родителями</Text>
+      <Button title="Добавить нового родителя" onPress={handleAddNew} />
       <FlatList
         data={parents}
         renderItem={renderItem}

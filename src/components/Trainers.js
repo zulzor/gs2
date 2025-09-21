@@ -74,7 +74,7 @@ const Trainers = () => {
   };
 
   const handleDelete = async (item) => {
-    if (window.confirm(`Are you sure you want to delete trainer ${item.first_name} ${item.last_name}?`)) {
+    if (window.confirm(`Вы уверены, что хотите удалить тренера ${item.first_name} ${item.last_name}?`)) {
       await deleteItem(item.id);
     }
   };
@@ -82,7 +82,7 @@ const Trainers = () => {
   const handleSave = async () => {
     const { id, first_name, last_name, email, password, phone_number, branch_ids } = currentItem;
     if (!first_name || !last_name || !email) {
-      window.alert('First name, last name, and email are required.');
+      window.alert('Имя, фамилия и email обязательны.');
       return;
     }
 
@@ -99,7 +99,7 @@ const Trainers = () => {
         await updateItem(id, dataToSave);
       } else {
         if (!password) {
-          window.alert('Password is required for a new trainer.');
+          window.alert('Пароль обязателен для нового тренера.');
           return;
         }
         await createItem({ ...dataToSave, password });
@@ -115,42 +115,42 @@ const Trainers = () => {
       <View style={styles.itemTextContainer}>
         <Text style={styles.itemName}>{item.first_name} {item.last_name}</Text>
         <Text style={styles.itemDetails}>Email: {item.email}</Text>
-        <Text style={styles.itemDetails}>Phone: {item.phone_number}</Text>
-        <Text style={styles.itemDetails}>Branches: {item.branch_names ? item.branch_names.join(', ') : 'N/A'}</Text>
+        <Text style={styles.itemDetails}>Телефон: {item.phone_number}</Text>
+        <Text style={styles.itemDetails}>Филиалы: {item.branch_names ? item.branch_names.join(', ') : 'Не указаны'}</Text>
       </View>
       <View style={styles.buttonsContainer}>
-        <Button title="Edit" onPress={() => handleEdit(item)} />
-        <Button title="Delete" onPress={() => handleDelete(item)} color="#D40026" />
+        <Button title="Редактировать" onPress={() => handleEdit(item)} />
+        <Button title="Удалить" onPress={() => handleDelete(item)} color="#D40026" />
       </View>
     </View>
   );
 
   if (loading) {
-    return <Text>Loading trainers...</Text>;
+    return <Text>Загрузка тренеров...</Text>;
   }
 
   if (isEditing) {
     return (
       <ScrollView style={styles.formContainer}>
-        <Text style={styles.title}>{currentItem.id ? 'Edit Trainer' : 'Add New Trainer'}</Text>
-        <TextInput style={styles.input} placeholder="First Name" value={currentItem.first_name} onChangeText={(text) => setCurrentItem({ ...currentItem, first_name: text })} />
-        <TextInput style={styles.input} placeholder="Last Name" value={currentItem.last_name} onChangeText={(text) => setCurrentItem({ ...currentItem, last_name: text })} />
+        <Text style={styles.title}>{currentItem.id ? 'Редактировать данные тренера' : 'Добавить нового тренера'}</Text>
+        <TextInput style={styles.input} placeholder="Имя" value={currentItem.first_name} onChangeText={(text) => setCurrentItem({ ...currentItem, first_name: text })} />
+        <TextInput style={styles.input} placeholder="Фамилия" value={currentItem.last_name} onChangeText={(text) => setCurrentItem({ ...currentItem, last_name: text })} />
         <TextInput style={styles.input} placeholder="Email" value={currentItem.email} onChangeText={(text) => setCurrentItem({ ...currentItem, email: text })} keyboardType="email-address" autoCapitalize="none" />
-        <TextInput style={styles.input} placeholder="Phone Number" value={currentItem.phone_number} onChangeText={(text) => setCurrentItem({ ...currentItem, phone_number: text })} keyboardType="phone-pad" />
+        <TextInput style={styles.input} placeholder="Номер телефона" value={currentItem.phone_number} onChangeText={(text) => setCurrentItem({ ...currentItem, phone_number: text })} keyboardType="phone-pad" />
 
         <MultiSelectCheckboxes 
-            title="Branches"
+            title="Филиалы"
             options={branches}
             selectedIds={currentItem.branch_ids}
             onSelectionChange={(ids) => setCurrentItem({ ...currentItem, branch_ids: ids })}
         />
 
         {!currentItem.id && (
-          <TextInput style={styles.input} placeholder="Password" onChangeText={(text) => setCurrentItem({ ...currentItem, password: text })} secureTextEntry />
+          <TextInput style={styles.input} placeholder="Пароль" onChangeText={(text) => setCurrentItem({ ...currentItem, password: text })} secureTextEntry />
         )}
         <View style={styles.formButtons}>
-          <Button title="Save" onPress={handleSave} />
-          <Button title="Cancel" onPress={() => setIsEditing(false)} color="gray" />
+          <Button title="Сохранить" onPress={handleSave} />
+          <Button title="Отмена" onPress={() => setIsEditing(false)} color="gray" />
         </View>
       </ScrollView>
     );
@@ -158,8 +158,8 @@ const Trainers = () => {
 
   return (
     <View>
-      <Text style={styles.title}>Manage Trainers</Text>
-      <Button title="Add New Trainer" onPress={handleAddNew} />
+      <Text style={styles.title}>Управление тренерами</Text>
+      <Button title="Добавить нового тренера" onPress={handleAddNew} />
       <FlatList data={trainers} renderItem={renderTrainerItem} keyExtractor={(item) => item.id.toString()} style={styles.list} />
     </View>
   );

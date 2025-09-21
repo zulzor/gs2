@@ -29,15 +29,15 @@ const Dashboard = () => {
       case 'child':
         return <ChildDashboard />;
       default:
-        return <Text>No dashboard available for your role.</Text>;
+        return <Text>Нет доступной панели для вашей роли.</Text>;
     }
   };
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>GS2 Arsenal / {user?.role}</Text>
-        <Button title="Logout" onPress={handleLogout} color="#D40026" />
+        <Text style={styles.title}>GS2 Арсенал / {user?.role}</Text>
+        <Button title="Выйти" onPress={handleLogout} color="#D40026" />
       </View>
 
       <View style={styles.content}>{renderDashboardByRole()}</View>
